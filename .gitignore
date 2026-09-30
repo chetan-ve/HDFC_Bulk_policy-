@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Heavy generated PDFs and folders
+ppr-bulk/
+HDFC Bulk Policy/
+*.pdf
+
+# Excel and Data files (Customer policy data)
+*.xlsx
+*.xls
+*.csv
+
+# Output artifacts
+assets/output/
+assets/*.xlsx
+
+# Environment & Editor
+.env
+.vscode/
