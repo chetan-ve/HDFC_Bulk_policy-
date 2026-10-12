@@ -18,8 +18,8 @@ t1 = time.time()
 excel_file = r'C:\Users\chetan.p\Downloads\Input_PPR_Generation_Policy_29092026.xlsx'
 sheet_name = 'Sheet1'
 data_values = pd.read_excel(excel_file, sheet_name=sheet_name) 
-policy_lower_range = 0
-policy_upper_range = 500
+policy_lower_range = 3
+policy_upper_range = 4
 list_bajaj_not_run_cases = []
 
 policy_range = data_values.iloc[policy_lower_range:policy_upper_range]
@@ -107,6 +107,7 @@ for index, row in policy_range.iterrows():
                 $level_cover_period:Int,
                 $max_projection_year:Int,
                 $is_pdf:Boolean,
+                $is_bulk_ppr:Boolean,
                 $calc_pay_zero:Boolean,
                 $calc_pay_one:Boolean,
                 $calc_pay_three:Boolean,
@@ -146,6 +147,7 @@ for index, row in policy_range.iterrows():
                     level_cover_period:$level_cover_period,
                     max_projection_year:$max_projection_year,
                     is_pdf:$is_pdf,
+                    is_bulk_ppr:$is_bulk_ppr,
                     calc_pay_zero:$calc_pay_zero,
                     calc_pay_one:$calc_pay_one,
                     calc_pay_three:$calc_pay_three,
@@ -230,6 +232,7 @@ for index, row in policy_range.iterrows():
                 "level_cover_period": level_cover_period,
                 "max_projection_year":pt,
                 "is_pdf":True,
+                "is_bulk_ppr": False,
                 "calc_pay_zero":False,
                 "calc_pay_one":False,
                 "calc_pay_three":False,
