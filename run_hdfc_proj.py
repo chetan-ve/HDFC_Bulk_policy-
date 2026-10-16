@@ -15,7 +15,7 @@ t1 = time.time()
 # excel_file = 'sample.xlsx'
 # sheet_name = 'Sample Policies'
 
-excel_file = r'C:\Users\chetan.p\Downloads\Input_PPR_Generation_Policy_29092026.xlsx'
+excel_file = r'C:\Users\chetan.p\Downloads\hdfc_ppr_input_sample_13.xlsx'
 sheet_name = 'Sheet1'
 data_values = pd.read_excel(excel_file, sheet_name=sheet_name) 
 policy_lower_range = 3
@@ -67,10 +67,11 @@ for index, row in policy_range.iterrows():
         sum_assured = row["Sum Assured"]
         valuation_date = row["Valuation date"].strftime("%d-%m-%Y")
         policy_number = str(row["Policy Number"])
-        module = "bajaj"
+        module = "baja"
         sr = str(row['Sr no'])
         level_cover_period = int(row["level_cover_period"])
         policy_holder_name = str(row.get("policy_holder_name"))
+        policy_status = "Predue" if pd.isna(row.get("policy_status")) else str(row.get("policy_status")).strip()
         # Define the GraphQL query
         query = '''
             query Projection(
@@ -108,6 +109,7 @@ for index, row in policy_range.iterrows():
                 $max_projection_year:Int,
                 $is_pdf:Boolean,
                 $is_bulk_ppr:Boolean,
+                $policy_status:String,
                 $calc_pay_zero:Boolean,
                 $calc_pay_one:Boolean,
                 $calc_pay_three:Boolean,
@@ -148,6 +150,7 @@ for index, row in policy_range.iterrows():
                     max_projection_year:$max_projection_year,
                     is_pdf:$is_pdf,
                     is_bulk_ppr:$is_bulk_ppr,
+                    policy_status:$policy_status,
                     calc_pay_zero:$calc_pay_zero,
                     calc_pay_one:$calc_pay_one,
                     calc_pay_three:$calc_pay_three,
@@ -228,11 +231,12 @@ for index, row in policy_range.iterrows():
                 "sum_assured": sum_assured,
                 "valuation_date": valuation_date,
                 "policy_number": policy_number,
-                "module": "bajaj",
+                "module": "hdfc",
                 "level_cover_period": level_cover_period,
                 "max_projection_year":pt,
                 "is_pdf":True,
-                "is_bulk_ppr": False,
+                "is_bulk_ppr": True,
+                "policy_status": policy_status,
                 "calc_pay_zero":False,
                 "calc_pay_one":False,
                 "calc_pay_three":False,
