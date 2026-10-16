@@ -15,11 +15,11 @@ t1 = time.time()
 # excel_file = 'sample.xlsx'
 # sheet_name = 'Sample Policies'
 
-excel_file = r'C:\Users\chetan.p\Downloads\hdfc_ppr_input_sample_13.xlsx'
+excel_file = r'C:\Users\sonam.p\Downloads\Input_Data_File.xlsx'
 sheet_name = 'Sheet1'
 data_values = pd.read_excel(excel_file, sheet_name=sheet_name) 
-policy_lower_range = 3
-policy_upper_range = 4
+policy_lower_range = 1
+policy_upper_range = 2
 list_bajaj_not_run_cases = []
 
 policy_range = data_values.iloc[policy_lower_range:policy_upper_range]
