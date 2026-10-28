@@ -20,7 +20,7 @@ excel_file = r'hdfc_with_rider_input.xlsx'
 sheet_name = 'Sheet1'
 data_values = pd.read_excel(excel_file, sheet_name=sheet_name) 
 policy_lower_range = 0
-policy_upper_range = 4
+policy_upper_range = 1000
 list_bajaj_not_run_cases = []
 
 policy_range = data_values.iloc[policy_lower_range:policy_upper_range]
