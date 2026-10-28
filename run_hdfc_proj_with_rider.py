@@ -105,7 +105,7 @@ for index, row in policy_range.iterrows():
 
         def get_fund_alloc(n):
             val = row.get("Fund alloc {}".format(n))
-            return 0 if pd.isna(val) else (val * 100)
+            return 0 if pd.isna(val) else (val)
 
         fund_1 = get_fund_name(1)
         fund_1_alloc = get_fund_alloc(1)
