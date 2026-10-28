@@ -15,7 +15,7 @@ HDFC Bulk Policy/
 *.csv
 
 # Output artifacts
-assets/output/
+#assets/output/
 assets/*.xlsx
 
 # Environment & Editor

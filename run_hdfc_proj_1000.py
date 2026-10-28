@@ -15,14 +15,20 @@ t1 = time.time()
 # excel_file = 'sample.xlsx'
 # sheet_name = 'Sample Policies'
 
-excel_file = r'C:\Users\chetan.p\Downloads\Input_PPR_Generation_Policy_29092026.xlsx'
+excel_file = r'C:\Users\sonam.p\Downloads\Input_Data_File.xlsx'
 sheet_name = 'Sheet1'
 data_values = pd.read_excel(excel_file, sheet_name=sheet_name) 
-policy_lower_range = 3000
-policy_upper_range = 3500
+policy_lower_range = 0
+policy_upper_range = 1000
 list_bajaj_not_run_cases = []
 
 policy_range = data_values.iloc[policy_lower_range:policy_upper_range]
+
+
+def add_not_run_case(row, error_message):
+    failed_case = row.to_dict()
+    failed_case["Error Message"] = str(error_message)
+    list_bajaj_not_run_cases.append(failed_case)
 
 
 # api url
@@ -67,10 +73,12 @@ for index, row in policy_range.iterrows():
         sum_assured = row["Sum Assured"]
         valuation_date = row["Valuation date"].strftime("%d-%m-%Y")
         policy_number = str(row["Policy Number"])
-        module = "bajaj"
+        module = "baja"
         sr = str(row['Sr no'])
         level_cover_period = int(row["level_cover_period"])
         policy_holder_name = str(row.get("policy_holder_name"))
+        policy_status_value = row.get("policy_status", "")
+        policy_status = "" if pd.isna(policy_status_value) else str(policy_status_value).strip()
         # Define the GraphQL query
         query = '''
             query Projection(
@@ -107,6 +115,8 @@ for index, row in policy_range.iterrows():
                 $level_cover_period:Int,
                 $max_projection_year:Int,
                 $is_pdf:Boolean,
+                $is_bulk_ppr:Boolean,
+                $policy_status:String,
                 $calc_pay_zero:Boolean,
                 $calc_pay_one:Boolean,
                 $calc_pay_three:Boolean,
@@ -146,6 +156,8 @@ for index, row in policy_range.iterrows():
                     level_cover_period:$level_cover_period,
                     max_projection_year:$max_projection_year,
                     is_pdf:$is_pdf,
+                    is_bulk_ppr:$is_bulk_ppr,
+                    policy_status:$policy_status,
                     calc_pay_zero:$calc_pay_zero,
                     calc_pay_one:$calc_pay_one,
                     calc_pay_three:$calc_pay_three,
@@ -226,10 +238,12 @@ for index, row in policy_range.iterrows():
                 "sum_assured": sum_assured,
                 "valuation_date": valuation_date,
                 "policy_number": policy_number,
-                "module": "bajaj",
+                "module": "hdfc",
                 "level_cover_period": level_cover_period,
                 "max_projection_year":pt,
                 "is_pdf":True,
+                "is_bulk_ppr": True,
+                "policy_status": policy_status,
                 "calc_pay_zero":False,
                 "calc_pay_one":False,
                 "calc_pay_three":False,
@@ -250,13 +264,21 @@ for index, row in policy_range.iterrows():
         }
 
         payload = json.dumps(payload)
-        response = requests.request("POST", url, headers=headers, data=payload)
+        try:
+            response = requests.request("POST", url, headers=headers, data=payload)
+        except requests.RequestException as e:
+            error_message = f"Request failed: {e}"
+            add_not_run_case(row, error_message)
+            print(json.dumps(variables))
+            print(error_message)
+            continue
         
     # Process the API response and collect the calculated result
-        result = response.json()
-
+        result = {}
         try:
-            if result["data"]['Projection'] is not None:
+            result = response.json()
+            projection = result.get("data", {}).get("Projection") if isinstance(result, dict) else None
+            if projection is not None:
                 print(sr)
                 excel_headers = ""
                 python_output = result["data"]['Projection']
@@ -268,6 +290,7 @@ for index, row in policy_range.iterrows():
                     "Product Name": python_output['product_name'],
                     "Premium Frequency": python_output['premium_mode'],
                     "Policy Holder Name": policy_holder_name,
+                    "Policy Status": policy_status,
                     "UIN": python_output['uin'],
                     "DOB": dob,
                     "Gender": gender,                    
@@ -301,17 +324,17 @@ for index, row in policy_range.iterrows():
                         })
                 full_python_output.append(extracted_data)
             else:
+                errors = result.get("errors", "Projection data missing from API response") if isinstance(result, dict) else "Invalid API response"
+                add_not_run_case(row, errors)
                 print(json.dumps(variables))
-                dict_not_run_case = row.to_dict()
-                list_bajaj_not_run_cases.append(dict_not_run_case)
-                errors = response.json()['errors']
-                print(errors)     
+                print(errors)
+                continue
         except Exception as e:
-            dict_not_run_case = row.to_dict()
-            list_bajaj_not_run_cases.append(dict_not_run_case)
-            errors = response.json()['errors']
+            errors = result.get("errors", str(e)) if isinstance(result, dict) else str(e)
+            add_not_run_case(row, errors)
             print(json.dumps(variables))
             print(errors)
+            continue
         
 df_python_output    = pd.DataFrame(full_python_output)
 
